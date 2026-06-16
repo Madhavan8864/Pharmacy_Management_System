@@ -1,0 +1,44 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Suppliers List{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2>Suppliers</h2>
+        <a href="{{ url_for('supplier_bp.add_supplier') }}" class="btn btn-success">+ Add Supplier</a>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>GST No</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for supplier in suppliers %}
+            <tr>
+                <td>{{ supplier.id }}</td>
+                <td>{{ supplier.name }}</td>
+                <td>{{ supplier.contact or '-' }}</td>
+                <td>{{ supplier.email or '-' }}</td>
+                <td>{{ supplier.gst_no or '-' }}</td>
+                <td>
+                    <a href="{{ url_for('supplier_bp.edit_supplier', supplier_id=supplier.id) }}" class="btn btn-warning" style="font-size: 12px;">Edit</a>
+                    <a href="{{ url_for('supplier_bp.delete_supplier', supplier_id=supplier.id) }}" class="btn btn-danger" style="font-size: 12px;" onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not suppliers %}
+    <p style="text-align: center; padding: 20px;">No suppliers found.</p>
+    {% endif %}
+</div>
+{% endblock %}

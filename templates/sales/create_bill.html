@@ -1,0 +1,365 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Create Bill{% endblock %}
+
+{% block content %}
+<style>
+    .selection-flow {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .flow-step {
+        margin-bottom: 20px;
+    }
+    
+    .flow-step label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+    
+    .flow-step select, .flow-step input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 16px;
+    }
+    
+    .add-btn {
+        background: #27ae60;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+    }
+    
+    .add-btn:hover {
+        background: #219a52;
+    }
+    
+    .cart-item {
+        border-bottom: 1px solid #eee;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .cart-item-info {
+        flex: 2;
+    }
+    
+    .cart-item-quantity {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .cart-item-total {
+        flex: 1;
+        text-align: right;
+    }
+    
+    .remove-btn {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .quantity-control button {
+        width: 25px;
+        height: 25px;
+        border: 1px solid #ddd;
+        background: #f8f9fa;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    
+    .quantity-control input {
+        width: 50px;
+        text-align: center;
+        padding: 3px;
+    }
+</style>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Left Side - Add Items Flow -->
+    <div class="card">
+        <h3>Add Items to Bill</h3>
+        
+        <div class="selection-flow">
+            <div class="flow-step">
+                <label>1. Select Category</label>
+                <select id="categorySelect" onchange="loadMedicines()">
+                    <option value="">-- Select Category --</option>
+                    {% set categories = [] %}
+                    {% for medicine in medicines %}
+                        {% if medicine.category and medicine.category not in categories %}
+                            {% set _ = categories.append(medicine.category) %}
+                            <option value="{{ medicine.category }}">{{ medicine.category }}</option>
+                        {% endif %}
+                    {% endfor %}
+                    <option value="Uncategorized">Uncategorized</option>
+                </select>
+            </div>
+            
+            <div class="flow-step">
+                <label>2. Select Medicine</label>
+                <select id="medicineSelect" disabled>
+                    <option value="">-- First Select Category --</option>
+                </select>
+            </div>
+            
+            <div class="flow-step">
+                <label>3. Enter Quantity</label>
+                <input type="number" id="quantity" value="1" min="1">
+            </div>
+            
+            <button class="add-btn" onclick="addToCart()">+ Add to Cart</button>
+        </div>
+    </div>
+    
+    <!-- Right Side - Cart -->
+    <div class="card">
+        <h3>Shopping Cart</h3>
+        <div id="cartItems">
+            {% if cart and cart|length > 0 %}
+                {% for item in cart %}
+                <div class="cart-item" id="cart-item-{{ item.medicine_id }}">
+                    <div class="cart-item-info">
+                        <strong>{{ item.name }}</strong><br>
+                        <small>₹{{ "%.2f"|format(item.price) }} per piece</small>
+                    </div>
+                    <div class="cart-item-quantity">
+                        <div class="quantity-control">
+                            <button onclick="updateQty({{ item.medicine_id }}, -1)">-</button>
+                            <input type="text" id="qty-{{ item.medicine_id }}" value="{{ item.quantity }}" readonly style="width: 40px; text-align: center;">
+                            <button onclick="updateQty({{ item.medicine_id }}, 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="cart-item-total">
+                        ₹{{ "%.2f"|format(item.price * item.quantity) }}
+                        <button class="remove-btn" onclick="removeItem({{ item.medicine_id }})">×</button>
+                    </div>
+                </div>
+                {% endfor %}
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #ddd;">
+                    <h3>Total: ₹{{ "%.2f"|format(total) }}</h3>
+                    <a href="{{ url_for('sales_bp.clear_cart') }}" class="btn btn-danger" style="margin-top: 10px;" onclick="return confirm('Clear entire cart?')">Clear Cart</a>
+                </div>
+            {% else %}
+                <p style="text-align: center; padding: 40px; color: #999;">Cart is empty</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if cart and cart|length > 0 %}
+<div class="card" style="margin-top: 20px;">
+    <h3>Checkout</h3>
+    <form method="POST">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Customer</label>
+                <select name="customer_id">
+                    <option value="">Walk-in Customer</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.name }} - {{ customer.phone or '' }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select name="payment_method">
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="UPI">UPI</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Discount (₹)</label>
+                <input type="number" step="0.01" name="discount" id="discount" value="0" onkeyup="updateFinalTotal()">
+            </div>
+            
+            <div class="form-group">
+                <label>GST (₹)</label>
+                <input type="number" step="0.01" name="gst" id="gst" value="0" onkeyup="updateFinalTotal()">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Final Amount</label>
+            <input type="text" id="finalAmount" readonly style="background: #f0f0f0; font-size: 18px; font-weight: bold; color: #27ae60;">
+        </div>
+        
+        <button type="submit" class="btn btn-success">Complete Sale</button>
+    </form>
+</div>
+{% endif %}
+
+<script>
+// Store medicines data
+const medicines = {{ medicines|tojson }};
+
+// Load medicines based on selected category
+function loadMedicines() {
+    const category = document.getElementById('categorySelect').value;
+    const medicineSelect = document.getElementById('medicineSelect');
+    
+    if (!category) {
+        medicineSelect.disabled = true;
+        medicineSelect.innerHTML = '<option value="">-- First Select Category --</option>';
+        return;
+    }
+    
+    // Filter medicines by category
+    const filteredMedicines = medicines.filter(m => {
+        if (category === 'Uncategorized') {
+            return !m.category || m.category === '';
+        }
+        return m.category === category;
+    });
+    
+    if (filteredMedicines.length === 0) {
+        medicineSelect.innerHTML = '<option value="">-- No medicines in this category --</option>';
+        medicineSelect.disabled = true;
+        return;
+    }
+    
+    // Build options
+    let options = '<option value="">-- Select Medicine --</option>';
+    filteredMedicines.forEach(medicine => {
+        const stockStatus = medicine.quantity <= 0 ? ' (Out of Stock)' : 
+                           (medicine.quantity <= medicine.reorder_level ? ' (Low Stock: ' + medicine.quantity + ')' : ' (Stock: ' + medicine.quantity + ')');
+        options += `<option value="${medicine.id}" data-price="${medicine.selling_price}" data-stock="${medicine.quantity}">
+                        ${medicine.name} - ₹${medicine.selling_price}${stockStatus}
+                    </option>`;
+    });
+    
+    medicineSelect.innerHTML = options;
+    medicineSelect.disabled = false;
+}
+
+// Add to cart function
+function addToCart() {
+    const category = document.getElementById('categorySelect').value;
+    const medicineSelect = document.getElementById('medicineSelect');
+    const medicineId = medicineSelect.value;
+    const quantity = parseInt(document.getElementById('quantity').value);
+    
+    if (!category) {
+        alert('Please select a category first');
+        return;
+    }
+    
+    if (!medicineId) {
+        alert('Please select a medicine');
+        return;
+    }
+    
+    if (!quantity || quantity < 1) {
+        alert('Please enter valid quantity');
+        return;
+    }
+    
+    // Get selected medicine details
+    const selectedOption = medicineSelect.options[medicineSelect.selectedIndex];
+    const stock = parseInt(selectedOption.getAttribute('data-stock'));
+    
+    if (quantity > stock) {
+        alert(`Only ${stock} items available in stock!`);
+        return;
+    }
+    
+    // Add to cart via AJAX
+    fetch('{{ url_for("sales_bp.add_to_cart") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'medicine_id=' + medicineId + '&quantity=' + quantity
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+// Update quantity in cart
+function updateQty(medicineId, change) {
+    const qtyInput = document.getElementById(`qty-${medicineId}`);
+    let currentQty = parseInt(qtyInput.value);
+    let newQty = currentQty + change;
+    
+    if (newQty < 1) {
+        removeItem(medicineId);
+        return;
+    }
+    
+    // First remove then add with new quantity
+    fetch(`/sales/remove-from-cart/${medicineId}`)
+        .then(() => {
+            fetch('{{ url_for("sales_bp.add_to_cart") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'medicine_id=' + medicineId + '&quantity=' + (newQty - currentQty)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        });
+}
+
+// Remove item from cart
+function removeItem(medicineId) {
+    if (confirm('Remove this item from cart?')) {
+        window.location.href = `/sales/remove-from-cart/${medicineId}`;
+    }
+}
+
+// Update final total with discount and GST
+function updateFinalTotal() {
+    const cartTotal = {{ total }};
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+    const gst = parseFloat(document.getElementById('gst').value) || 0;
+    const finalAmount = cartTotal - discount + gst;
+    document.getElementById('finalAmount').value = '₹' + finalAmount.toFixed(2);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('finalAmount')) {
+        updateFinalTotal();
+    }
+});
+</script>
+{% endblock %}

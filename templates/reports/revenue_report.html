@@ -1,0 +1,67 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Revenue Report{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Revenue Report</h2>
+    
+    <form method="GET" style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+            <label>From Date</label>
+            <input type="date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>To Date</label>
+            <input type="date" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="form-group" style="align-self: flex-end;">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+        </div>
+    </form>
+    
+    {% if report.summary %}
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="number" style="color: #27ae60;">₹{{ "%.2f"|format(report.summary.total_revenue or 0) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Cost</h3>
+            <div class="number" style="color: #e74c3c;">₹{{ "%.2f"|format((report.summary.total_revenue or 0) - (report.profit or 0)) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Profit</h3>
+            <div class="number" style="color: #3498db;">₹{{ "%.2f"|format(report.profit or 0) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Profit Margin</h3>
+            <div class="number">
+                {% if report.summary.total_revenue and report.summary.total_revenue > 0 %}
+                    {{ "%.1f"|format((report.profit or 0) / report.summary.total_revenue * 100) }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 20px;">
+        <h3>Sales Breakdown</h3>
+        <table>
+            <thead>
+                <tr><th>Total Sales</th><th>Total Discount</th><th>Total GST</th><th>Net Revenue</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>₹{{ "%.2f"|format(report.summary.total_amount_before_tax or 0) }}</td>
+                    <td>₹{{ "%.2f"|format(report.summary.total_discount or 0) }}</td>
+                    <td>₹{{ "%.2f"|format(report.summary.total_gst or 0) }}</td>
+                    <td><strong>₹{{ "%.2f"|format(report.summary.total_revenue or 0) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

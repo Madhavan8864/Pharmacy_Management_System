@@ -1,0 +1,57 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Stock Report{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Current Stock Report</h2>
+    
+    <div class="stats" style="margin-bottom: 20px;">
+        <div class="stat-card">
+            <h3>Total Items</h3>
+            <div class="number">{{ stock|length }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Stock Value</h3>
+            <div class="number">₹{{ "%.2f"|format(stock|sum(attribute='stock_value') or 0) }}</div>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Medicine Name</th>
+                <th>Batch No</th>
+                <th>Quantity</th>
+                <th>Purchase Price</th>
+                <th>Selling Price</th>
+                <th>Stock Value</th>
+                <th>Supplier</th>
+                <th>Expiry Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stock %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.batch_no or '-' }}</td>
+                <td style="{% if item.quantity <= item.reorder_level %}color: red; font-weight: bold;{% endif %}">
+                    {{ item.quantity }}
+                </td>
+                <td>₹{{ "%.2f"|format(item.purchase_price or 0) }}</td>
+                <td>₹{{ "%.2f"|format(item.selling_price or 0) }}</td>
+                <td>₹{{ "%.2f"|format(item.stock_value or 0) }}</td>
+                <td>{{ item.supplier_name or '-' }}</td>
+                <td style="{% if item.expiry_date and item.expiry_date <= '2026-01-01' %}color: red;{% endif %}">
+                    {{ item.expiry_date or '-' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not stock %}
+    <p style="text-align: center; padding: 20px;">No stock data available.</p>
+    {% endif %}
+</div>
+{% endblock %}

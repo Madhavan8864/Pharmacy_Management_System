@@ -1,0 +1,63 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Medicines List{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2>Medicines</h2>
+        <a href="{{ url_for('medicine_bp.add_medicine') }}" class="btn btn-success">+ Add Medicine</a>
+    </div>
+    
+    <form method="GET" action="{{ url_for('medicine_bp.search_medicines') }}" style="margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="search" placeholder="Search by name, batch or category..." 
+                   value="{{ search_term }}" style="flex: 1; padding: 8px;">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Batch No</th>
+                <th>Expiry Date</th>
+                <th>Stock</th>
+                <th>Selling Price</th>
+                <th>Supplier</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for medicine in medicines %}
+            <tr>
+                <td>{{ medicine.id }}</td>
+                <td>{{ medicine.name }}</td>
+                <td>{{ medicine.category or '-' }}</td>
+                <td>{{ medicine.batch_no or '-' }}</td>
+                <td style="{% if medicine.expiry_date <= '2026-01-01' %}color: red;{% endif %}">
+                    {{ medicine.expiry_date or '-' }}
+                </td>
+                <td style="{% if medicine.quantity <= medicine.reorder_level %}color: red; font-weight: bold;{% endif %}">
+                    {{ medicine.quantity }}
+                </td>
+                <td>₹{{ "%.2f"|format(medicine.selling_price or 0) }}</td>
+                <td>{{ medicine.supplier_name or '-' }}</td>
+                <td>
+                    <a href="{{ url_for('medicine_bp.view_medicine', medicine_id=medicine.id) }}" class="btn btn-primary" style="font-size: 12px;">View</a>
+                    <a href="{{ url_for('medicine_bp.edit_medicine', medicine_id=medicine.id) }}" class="btn btn-warning" style="font-size: 12px;">Edit</a>
+                    <a href="{{ url_for('medicine_bp.delete_medicine', medicine_id=medicine.id) }}" class="btn btn-danger" style="font-size: 12px;" onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not medicines %}
+    <p style="text-align: center; padding: 20px;">No medicines found.</p>
+    {% endif %}
+</div>
+{% endblock %}

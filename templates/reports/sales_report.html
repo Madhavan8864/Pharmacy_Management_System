@@ -1,0 +1,73 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Sales Report{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Sales Report</h2>
+    
+    <form method="GET" style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;">
+            <label>From Date</label>
+            <input type="date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>To Date</label>
+            <input type="date" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="form-group" style="align-self: flex-end;">
+            <button type="submit" class="btn btn-primary">Generate Report</button>
+        </div>
+    </form>
+    
+    {% if report.summary %}
+    <div class="stats" style="margin-bottom: 20px;">
+        <div class="stat-card">
+            <h3>Total Sales</h3>
+            <div class="number">{{ report.summary.total_sales or 0 }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="number">₹{{ "%.2f"|format(report.summary.total_revenue or 0) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Discount</h3>
+            <div class="number">₹{{ "%.2f"|format(report.summary.total_discount or 0) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total GST</h3>
+            <div class="number">₹{{ "%.2f"|format(report.summary.total_gst or 0) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Average Sale Value</h3>
+            <div class="number">₹{{ "%.2f"|format(report.summary.avg_sale_value or 0) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Profit</h3>
+            <div class="number">₹{{ "%.2f"|format(report.profit or 0) }}</div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if report.top_medicines %}
+    <div class="card" style="margin-top: 20px;">
+        <h3>Top Selling Medicines</h3>
+        <table>
+            <thead>
+                <tr><th>Medicine</th><th>Category</th><th>Quantity Sold</th><th>Revenue</th></tr>
+            </thead>
+            <tbody>
+                {% for medicine in report.top_medicines %}
+                <tr>
+                    <td>{{ medicine.name }}</td>
+                    <td>{{ medicine.category or '-' }}</td>
+                    <td>{{ medicine.total_quantity }}</td>
+                    <td>₹{{ "%.2f"|format(medicine.total_revenue) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

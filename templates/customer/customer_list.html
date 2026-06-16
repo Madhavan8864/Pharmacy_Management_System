@@ -1,0 +1,52 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Customers List{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2>Customers</h2>
+        <a href="{{ url_for('customer_bp.add_customer') }}" class="btn btn-success">+ Add Customer</a>
+    </div>
+    
+    <form method="GET" action="{{ url_for('customer_bp.search_customers') }}" style="margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="search" placeholder="Search by name, phone or email..." 
+                   value="{{ search_term }}" style="flex: 1; padding: 8px;">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.id }}</td>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.phone or '-' }}</td>
+                <td>{{ customer.email or '-' }}</td>
+                <td>{{ customer.address or '-' }}</td>
+                <td>
+                    <a href="{{ url_for('customer_bp.edit_customer', customer_id=customer.id) }}" class="btn btn-warning" style="font-size: 12px;">Edit</a>
+                    <a href="{{ url_for('customer_bp.delete_customer', customer_id=customer.id) }}" class="btn btn-danger" style="font-size: 12px;" onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not customers %}
+    <p style="text-align: center; padding: 20px;">No customers found.</p>
+    {% endif %}
+</div>
+{% endblock %}

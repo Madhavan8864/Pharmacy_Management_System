@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Customer Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Customer Details</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Customer Name *</label>
+            <input type="text" name="name" value="{{ customer.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" name="phone" value="{{ customer.phone or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ customer.email or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label>Address</label>
+            <textarea name="address" rows="3">{{ customer.address or '' }}</textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-success">Update Customer</button>
+        <a href="{{ url_for('customer_bp.customer_list') }}" class="btn btn-primary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Add Purchase{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>New Purchase Order</h2>
+    <form method="POST" id="purchaseForm">
+        <div class="form-group">
+            <label>Supplier *</label>
+            <select name="supplier_id" required>
+                <option value="">Select Supplier</option>
+                {% for supplier in suppliers %}
+                <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Supplier Invoice No</label>
+            <input type="text" name="invoice_no">
+        </div>
+        
+        <h3>Purchase Items</h3>
+        <div id="itemsContainer">
+            <div class="item-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <select name="medicine_id" style="flex: 2;" required>
+                    <option value="">Select Medicine</option>
+                    {% for medicine in medicines %}
+                    <option value="{{ medicine.id }}">{{ medicine.name }} (Current Stock: {{ medicine.quantity }})</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="quantity" placeholder="Quantity" style="flex: 1;" required>
+                <input type="number" step="0.01" name="purchase_price" placeholder="Purchase Price" style="flex: 1;" required>
+                <button type="button" onclick="removeRow(this)" class="btn btn-danger" style="flex: 0;">Remove</button>
+            </div>
+        </div>
+        
+        <button type="button" onclick="addRow()" class="btn btn-primary" style="margin-bottom: 20px;">+ Add More Items</button>
+        
+        <div>
+            <button type="submit" class="btn btn-success">Save Purchase</button>
+            <a href="{{ url_for('purchase_bp.purchase_list') }}" class="btn btn-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function addRow() {
+    var container = document.getElementById('itemsContainer');
+    var originalRow = container.querySelector('.item-row');
+    var newRow = originalRow.cloneNode(true);
+    newRow.querySelectorAll('input, select').forEach(input => input.value = '');
+    container.appendChild(newRow);
+}
+
+function removeRow(button) {
+    var container = document.getElementById('itemsContainer');
+    if (container.children.length > 1) {
+        button.parentElement.remove();
+    } else {
+        alert('At least one item is required');
+    }
+}
+</script>
+{% endblock %}

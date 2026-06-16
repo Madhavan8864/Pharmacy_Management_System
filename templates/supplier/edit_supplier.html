@@ -1,0 +1,38 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Edit Supplier{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2>Edit Supplier</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Supplier Name *</label>
+            <input type="text" name="name" value="{{ supplier.name }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Contact Number</label>
+            <input type="text" name="contact" value="{{ supplier.contact or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ supplier.email or '' }}">
+        </div>
+        
+        <div class="form-group">
+            <label>Address</label>
+            <textarea name="address" rows="3">{{ supplier.address or '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>GST Number</label>
+            <input type="text" name="gst_no" value="{{ supplier.gst_no or '' }}">
+        </div>
+        
+        <button type="submit" class="btn btn-success">Update Supplier</button>
+        <a href="{{ url_for('supplier_bp.supplier_list') }}" class="btn btn-primary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

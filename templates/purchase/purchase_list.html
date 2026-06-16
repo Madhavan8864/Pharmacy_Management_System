@@ -1,0 +1,39 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Purchases List{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2>Purchase History</h2>
+        <a href="{{ url_for('purchase_bp.add_purchase') }}" class="btn btn-success">+ New Purchase</a>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Invoice No</th>
+                <th>Total Amount</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in purchases %}
+            <tr>
+                <td>{{ purchase.id }}</td>
+                <td>{{ purchase.supplier_name or '-' }}</td>
+                <td>{{ purchase.invoice_no or '-' }}</td>
+                <td>₹{{ "%.2f"|format(purchase.total_amount) }}</td>
+                <td>{{ purchase.purchase_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not purchases %}
+    <p style="text-align: center; padding: 20px;">No purchases found.</p>
+    {% endif %}
+</div>
+{% endblock %}

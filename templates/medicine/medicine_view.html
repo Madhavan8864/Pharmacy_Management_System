@@ -1,0 +1,60 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Medicine Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Medicine Details</h2>
+    <table style="width: 100%;">
+        <tr>
+            <th style="width: 200px;">ID:</th>
+            <td>{{ medicine.id }}</td>
+        </tr>
+        <tr>
+            <th>Name:</th>
+            <td>{{ medicine.name }}</td>
+        </tr>
+        <tr>
+            <th>Category:</th>
+            <td>{{ medicine.category or '-' }}</td>
+        </tr>
+        <tr>
+            <th>Batch Number:</th>
+            <td>{{ medicine.batch_no or '-' }}</td>
+        </tr>
+        <tr>
+            <th>Expiry Date:</th>
+            <td>{{ medicine.expiry_date or '-' }}</td>
+        </tr>
+        <tr>
+            <th>Quantity:</th>
+            <td>{{ medicine.quantity }}</td>
+        </tr>
+        <tr>
+            <th>Purchase Price:</th>
+            <td>₹{{ "%.2f"|format(medicine.purchase_price or 0) }}</td>
+        </tr>
+        <tr>
+            <th>Selling Price:</th>
+            <td>₹{{ "%.2f"|format(medicine.selling_price or 0) }}</td>
+        </tr>
+        <tr>
+            <th>Supplier:</th>
+            <td>{{ medicine.supplier_name or '-' }}</td>
+        </tr>
+        <tr>
+            <th>Reorder Level:</th>
+            <td>{{ medicine.reorder_level }}</td>
+        </tr>
+        <tr>
+            <th>Created At:</th>
+            <td>{{ medicine.created_at }}</td>
+        </tr>
+    </table>
+    
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('medicine_bp.edit_medicine', medicine_id=medicine.id) }}" class="btn btn-warning">Edit</a>
+        <a href="{{ url_for('medicine_bp.medicine_list') }}" class="btn btn-primary">Back</a>
+    </div>
+</div>
+{% endblock %}
